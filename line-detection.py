@@ -98,6 +98,33 @@ def hough_circles_cv2(image):
 
     return result_image
 
+def hough_ellipse_transform(image, threshold=100):
+    blurred = cv2.GaussianBlur(image, (5, 5), 1.5)
+    edges = cv2.Canny(blurred, 50, 150)
+    height, width = edges.shape
+    accumulator = np.zeros((height, width, 50, 50, 180))  # (x, y, a, b, angle)
+    
+    edge_points = np.argwhere(edges)
+    for y, x in edge_points:
+        for a in range(10, 50, 2):
+            for b in range(10, 50, 2):
+                for angle in range(0, 180, 5):
+                    angle_rad = np.deg2rad(angle)
+                    x0 = int(x - a * np.cos(angle_rad))
+                    y0 = int(y - b * np.sin(angle_rad))
+                    if 0 <= x0 < width and 0 <= y0 < height:
+                        accumulator[x0, y0, a // 2, b // 2, angle // 5] += 1
+    
+    result_image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+    detected_ellipses = np.argwhere(accumulator > threshold)
+    for x, y, a, b, angle in detected_ellipses:
+        a *= 2
+        b *= 2
+        angle *= 5
+        cv2.ellipse(result_image, (y, x), (a, b), angle, 0, 360, (255, 0, 0), 2)
+    
+    return result_image
+
 # Load and convert image
 gray_image = cv2.imread('Images\circles.jpg', cv2.IMREAD_GRAYSCALE)
 # accumulator, rhos, thetas, edges = hough_line_transform(gray_image)
@@ -105,11 +132,13 @@ gray_image = cv2.imread('Images\circles.jpg', cv2.IMREAD_GRAYSCALE)
 # hough_line_cv2_result = hough_lines_cv2(gray_image)
 hough_circle_result = hough_circle_transform(gray_image)
 hough_circle_cv2_result = hough_circles_cv2(gray_image)
+# hough_ellipse_result = hough_ellipse_transform(gray_image)
 
 # Show Results
 # cv2.imshow('Hough Line Transform (From Scratch)', hough_line_result)
 # cv2.imshow('Hough Line Transform (cv2)', hough_line_cv2_result)
 cv2.imshow('Hough Circle Transform (From Scratch)', hough_circle_result)
 cv2.imshow('Hough Circle Transform (cv2)', hough_circle_cv2_result)
+# cv2.imshow('Hough Ellipse Transform (From Scratch)', hough_ellipse_result)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
