@@ -43,28 +43,29 @@ def draw_hough_lines(image, accumulator, rhos, thetas, threshold=100):
     return result_image
 
 def hough_circle_transform(image, min_radius=10, max_radius=50, threshold=150):
-    blurred = cv2.GaussianBlur(image, (5, 5), 1.5)
+    blurred = cv2.GaussianBlur(image, (5, 5), 5)
     edges = cv2.Canny(blurred, 50, 150)
     height, width = edges.shape
-    radii = np.arange(min_radius, max_radius + 1)
-    accumulator = np.zeros((height, width, len(radii)))
+    accumulator = np.zeros((height, width))
+    
+    # Compute Gradients
+    grad_x = cv2.Sobel(edges, cv2.CV_64F, 1, 0, ksize=3)
+    grad_y = cv2.Sobel(edges, cv2.CV_64F, 0, 1, ksize=3)
+    angles = np.arctan2(grad_y, grad_x)
     
     edge_points = np.argwhere(edges)
     for y, x in edge_points:
-        for r_idx, r in enumerate(radii):
-            for theta in np.arange(0, 360, 1):
-                theta_rad = np.deg2rad(theta)
-                a = int(x - r * np.cos(theta_rad))
-                b = int(y - r * np.sin(theta_rad))
-                if 0 <= a < width and 0 <= b < height:
-                    accumulator[b, a, r_idx] += 1
+        angle = angles[y, x]
+        for r in range(min_radius, max_radius):
+            a = int(x - r * np.cos(angle))
+            b = int(y - r * np.sin(angle))
+            if 0 <= a < width and 0 <= b < height:
+                accumulator[b, a] += 1
     
     result_image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     detected_circles = np.argwhere(accumulator > threshold)
-    for y, x, r_idx in detected_circles:
-        r = radii[r_idx]
-        cv2.circle(result_image, (x, y), r, (0, 255, 0), 2)
-        cv2.circle(result_image, (x, y), 2, (0, 0, 255), 3)
+    for y, x in detected_circles:
+        cv2.circle(result_image, (x, y), 2, (0, 255, 0), 3)
     
     return result_image
 
@@ -127,18 +128,19 @@ def hough_ellipse_transform(image, threshold=100):
 
 # Load and convert image
 gray_image = cv2.imread('Images\circles.jpg', cv2.IMREAD_GRAYSCALE)
+# gray_image = cv2.resize(gray_image, (200, 200))
 # accumulator, rhos, thetas, edges = hough_line_transform(gray_image)
 # hough_line_result = draw_hough_lines(gray_image, accumulator, rhos, thetas)
 # hough_line_cv2_result = hough_lines_cv2(gray_image)
 hough_circle_result = hough_circle_transform(gray_image)
-hough_circle_cv2_result = hough_circles_cv2(gray_image)
+# hough_circle_cv2_result = hough_circles_cv2(gray_image)
 # hough_ellipse_result = hough_ellipse_transform(gray_image)
 
 # Show Results
 # cv2.imshow('Hough Line Transform (From Scratch)', hough_line_result)
 # cv2.imshow('Hough Line Transform (cv2)', hough_line_cv2_result)
 cv2.imshow('Hough Circle Transform (From Scratch)', hough_circle_result)
-cv2.imshow('Hough Circle Transform (cv2)', hough_circle_cv2_result)
+# cv2.imshow('Hough Circle Transform (cv2)', hough_circle_cv2_result)
 # cv2.imshow('Hough Ellipse Transform (From Scratch)', hough_ellipse_result)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
