@@ -461,6 +461,37 @@ class SnakeGUI(QMainWindow):
         self.image_label.mouseReleaseEvent = self.mouseReleaseEvent
         self.image_label.mouseMoveEvent = self.mouseMoveEvent
         
+        # Create measurements panel
+        measurements_group = QGroupBox("Contour Measurements")
+        measurements_group.setStyleSheet("""
+            QGroupBox {
+                font-weight: bold;
+                border: 2px solid #3498db;
+                border-radius: 5px;
+                margin-top: 10px;
+                padding: 10px;
+            }
+            QGroupBox::title {
+                color: #2980b9;
+            }
+            QLabel {
+                font-size: 12px;
+                padding: 5px;
+            }
+        """)
+        
+        measurements_layout = QVBoxLayout(measurements_group)
+        
+        # Create labels for measurements
+        self.area_label = QLabel("Area: -")
+        self.perimeter_label = QLabel("Perimeter: -")
+        
+        measurements_layout.addWidget(self.area_label)
+        measurements_layout.addWidget(self.perimeter_label)
+        
+        # Add measurements group to left panel
+        left_layout.addWidget(measurements_group)
+        
     def load_image(self):
         try:
             file_path, _ = QFileDialog.getOpenFileName(
@@ -532,8 +563,18 @@ class SnakeGUI(QMainWindow):
         # Draw contour if it exists
         if self.contour_x is not None:
             points = np.column_stack((self.contour_x, self.contour_y))
-            # Changed color from (255, 0, 0) to (0, 0, 255) for red
-            cv2.polylines(img_copy, [points.astype(np.int32)], True, (255, 255, 0), 2)
+            points = points.astype(np.int32)
+            
+            # Draw contour
+            cv2.polylines(img_copy, [points], True, (255, 255, 0), 2)
+            
+            # Calculate measurements
+            perimeter = cv2.arcLength(points, True)
+            area = cv2.contourArea(points)
+            
+            # Update measurement labels with formatted values
+            self.area_label.setText(f"Area: {area:.2f} pixels²")
+            self.perimeter_label.setText(f"Perimeter: {perimeter:.2f} pixels")
         
         # Convert grayscale to RGB if needed
         if len(img_copy.shape) == 2:
