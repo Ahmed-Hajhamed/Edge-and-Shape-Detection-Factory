@@ -94,17 +94,17 @@ def detect_ellipses_contour(image, edges, min_radius, max_radius, min_distance):
                     cv2.ellipse(image, ellipse, (0, 255, 0), 2)
     return image
 
-image = cv2.imread('Images\chair.jpg')
+image = cv2.imread('Images//man.tif')
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-edges = cv2.Canny(blurred, 50, 150)
+edges = cv2.Canny(blurred, 50, 200)
 
-detected_lines_result = hough_line_transform(image, edges)
-circle_detection_result = hough_circle(image, edges, min_radius=10, max_radius=50, threshold=100, min_dist=10)
-ellipse_detection_result = detect_ellipses_contour(image, edges, min_radius=10, max_radius=450, min_distance=5)
+# detected_lines_result = hough_line_transform(image, edges)
+# circle_detection_result = hough_circle(image, edges, min_radius=60, max_radius=120, threshold=100, min_dist=10)
+ellipse_detection_result = detect_ellipses_contour(image, edges, min_radius=100, max_radius=450, min_distance=5)
 
-cv2.imshow('Lines', detected_lines_result)
-cv2.imshow('Circles', circle_detection_result)
+# cv2.imshow('Lines', detected_lines_result)
+# cv2.imshow('Circles', circle_detection_result)
 cv2.imshow('Ellipses', ellipse_detection_result)
 cv2.imshow('Edges', edges)
 cv2.waitKey(0)

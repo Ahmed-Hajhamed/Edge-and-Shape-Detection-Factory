@@ -89,7 +89,7 @@ def hough_lines_cv2(image, edge_threshold=50):
 
 def hough_circles_cv2(image):
     blurred = cv2.GaussianBlur(image, (5, 5), 1.5)
-    circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, dp=1.2, minDist=20, param1=50, param2=30, minRadius=10, maxRadius=50)
+    circles = cv2.HoughCircles(blurred, cv2.HOUGH_GRADIENT, dp=1.2, minDist=200, param1=50, param2=30, minRadius=5, maxRadius=50)
     result_image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     if circles is not None:
         circles = np.uint16(np.around(circles))
@@ -127,20 +127,26 @@ def hough_ellipse_transform(image, threshold=100):
     return result_image
 
 # Load and convert image
-gray_image = cv2.imread('Images\circles.jpg', cv2.IMREAD_GRAYSCALE)
+gray_image = cv2.imread("Images//1710707465.png", cv2.IMREAD_GRAYSCALE)
 # gray_image = cv2.resize(gray_image, (200, 200))
 # accumulator, rhos, thetas, edges = hough_line_transform(gray_image)
 # hough_line_result = draw_hough_lines(gray_image, accumulator, rhos, thetas)
 # hough_line_cv2_result = hough_lines_cv2(gray_image)
-hough_circle_result = hough_circle_transform(gray_image)
-# hough_circle_cv2_result = hough_circles_cv2(gray_image)
+# hough_circle_result = hough_circle_transform(gray_image)
+hough_circle_cv2_result = hough_circles_cv2(gray_image)
 # hough_ellipse_result = hough_ellipse_transform(gray_image)
 
 # Show Results
 # cv2.imshow('Hough Line Transform (From Scratch)', hough_line_result)
 # cv2.imshow('Hough Line Transform (cv2)', hough_line_cv2_result)
-cv2.imshow('Hough Circle Transform (From Scratch)', hough_circle_result)
+# cv2.imshow('Hough Circle Transform (From Scratch)', hough_circle_result)
 # cv2.imshow('Hough Circle Transform (cv2)', hough_circle_cv2_result)
 # cv2.imshow('Hough Ellipse Transform (From Scratch)', hough_ellipse_result)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+# cv2.waitKey(0)
+# cv2.destroyAllWindows()
+figure = plt.figure(figsize=(15, 15))
+subplot1 = figure.add_subplot(1, 1, 1)
+subplot1.imshow(hough_circle_cv2_result)
+subplot2 = figure.add_subplot(1, 2, 2)
+subplot2.imshow(gray_image)
+plt.show()
