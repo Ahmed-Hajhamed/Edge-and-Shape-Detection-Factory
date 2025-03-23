@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 
-def hough_line_transform(image, edges, theta_resolution=1, rho_resolution=1):
+def hough_line_detection(image, edges, theta_resolution=1, rho_resolution=1):
     height, width = edges.shape
 
     max_rho = int(np.hypot(height, width))
@@ -36,7 +36,7 @@ def draw_hough_lines(image, accumulator, rhos, thetas, threshold=100):
         cv2.line(result_image, pt1, pt2, (0, 0, 255), 2)
     return result_image
 
-def hough_circle(image, img_edges, min_radius, max_radius, threshold, min_dist):
+def hough_circle_detection(image, img_edges, min_radius, max_radius, threshold, min_dist):
     relust_image = image.copy()
     h, w = img_edges.shape
     accumulator = np.zeros((h, w, max_radius - min_radius + 1))
@@ -75,7 +75,7 @@ def draw_circles(image, centers):
             cv2.circle(image, (center[0], center[1]), center[2], (0, 255, 0), 2)
 
 
-def detect_ellipses_contour(image, edges, min_radius, max_radius, min_distance):
+def hough_ellipse_detection(image, edges, min_radius, max_radius, min_distance):
     contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     ellipses = []
     for contour in contours:
@@ -94,17 +94,17 @@ def detect_ellipses_contour(image, edges, min_radius, max_radius, min_distance):
                     cv2.ellipse(image, ellipse, (0, 255, 0), 2)
     return image
 
-image = cv2.imread('Images//man.tif')
-gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-edges = cv2.Canny(blurred, 50, 200)
+# image = cv2.imread('Images//man.tif')
+# gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+# blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+# edges = cv2.Canny(blurred, 50, 200)
 
-# detected_lines_result = hough_line_transform(image, edges)
-# circle_detection_result = hough_circle(image, edges, min_radius=60, max_radius=120, threshold=100, min_dist=10)
-ellipse_detection_result = detect_ellipses_contour(image, edges, min_radius=100, max_radius=450, min_distance=5)
+# # detected_lines_result = hough_line_transform(image, edges)
+# # circle_detection_result = hough_circle_detection(image, edges, min_radius=60, max_radius=120, threshold=100, min_dist=10)
+# ellipse_detection_result = hough_ellipse_detection(image, edges, min_radius=100, max_radius=450, min_distance=5)
 
-# cv2.imshow('Lines', detected_lines_result)
-# cv2.imshow('Circles', circle_detection_result)
-cv2.imshow('Ellipses', ellipse_detection_result)
-cv2.imshow('Edges', edges)
-cv2.waitKey(0)
+# # cv2.imshow('Lines', detected_lines_result)
+# # cv2.imshow('Circles', circle_detection_result)
+# cv2.imshow('Ellipses', ellipse_detection_result)
+# cv2.imshow('Edges', edges)
+# cv2.waitKey(0)

@@ -9,9 +9,10 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.main_layout = QtWidgets.QGridLayout(self.centralwidget)
 
-        self.original_image_label = QtWidgets.QLabel(self.centralwidget)
+        self.original_image_label = QtWidgets.QLabel('Double Click to Load Image', self.centralwidget)
         self.original_image_label.setScaledContents(True)
         self.original_image_label.setFixedSize(600, 400)
+        self.original_image_label.mouseDoubleClickEvent = MainWindow.load_image
 
         self.shape_detection_result_label = QtWidgets.QLabel(self.centralwidget)
         self.shape_detection_result_label.setScaledContents(True)
@@ -151,18 +152,107 @@ class Ui_MainWindow(object):
         self.circle_detection_radio_button.toggled.connect(self.show_hough_layout)
         self.ellipse_detection_radio_button.toggled.connect(self.show_hough_layout)
         self.line_detection_radio_button.setChecked(True)
-        
+        self.apply_edge_detection_button.clicked.connect(MainWindow.canny_edge_detection)
+        self.apply_hough_button.clicked.connect(MainWindow.detect_shapes)
+
         self.main_controls_layout.addLayout(self.edge_detectipn_controls_layout)
         self.main_controls_layout.addLayout(self.hough_controls_layout)
         self.main_layout.addLayout(self.main_controls_layout, 1, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
-
+        self.setup_sliders()
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def show_hough_layout(self):
         toggle_layout_visibility(self.line_detection_v_layout, self.line_detection_radio_button.isChecked())
         toggle_layout_visibility(self.circle_detection_v_layout, self.circle_detection_radio_button.isChecked())
         toggle_layout_visibility(self.ellipse_detection_v_layout, self.ellipse_detection_radio_button.isChecked())
+
+    def setup_sliders(self):
+        # Setup min, max, default values for sliders
+        self.kernel_size_slider.setMinimum(3)
+        self.kernel_size_slider.setMaximum(15)
+        self.kernel_size_slider.setSingleStep(2)
+        self.kernel_size_slider.setValue(5)
+        self.kernel_size_slider.valueChanged.connect(lambda: self.update_slider_value(self.kernel_size_slider, self.kernel_size_value_label))
+        
+        self.sigma_slider.setMinimum(1)
+        self.sigma_slider.setMaximum(10)
+        self.sigma_slider.setValue(1)
+        self.sigma_slider.valueChanged.connect(lambda: self.update_slider_value(self.sigma_slider, self.sigma_value_label, 0.1))
+        
+        self.edge_detection_low_threshold_slider.setMinimum(0)
+        self.edge_detection_low_threshold_slider.setMaximum(100)
+        self.edge_detection_low_threshold_slider.setValue(50)
+        self.edge_detection_low_threshold_slider.valueChanged.connect(lambda: self.update_slider_value(self.edge_detection_low_threshold_slider, self.edge_detection_low_threshold_value_label))
+        
+        self.edge_detection_high_threshold_slider.setMinimum(0)
+        self.edge_detection_high_threshold_slider.setMaximum(300)
+        self.edge_detection_high_threshold_slider.setValue(150)
+        self.edge_detection_high_threshold_slider.valueChanged.connect(lambda: self.update_slider_value(self.edge_detection_high_threshold_slider, self.edge_detection_high_threshold_value_label))
+        
+        self.circle_minimum_radius_slider.setMinimum(1)
+        self.circle_minimum_radius_slider.setMaximum(100)
+        self.circle_minimum_radius_slider.setValue(10)
+        self.circle_minimum_radius_slider.valueChanged.connect(lambda: self.update_slider_value(self.circle_minimum_radius_slider, self.circle_minimum_radius_value_label))
+        
+        self.circle_maximum_radius_slider.setMinimum(10)
+        self.circle_maximum_radius_slider.setMaximum(200)
+        self.circle_maximum_radius_slider.setValue(50)
+        self.circle_maximum_radius_slider.valueChanged.connect(lambda: self.update_slider_value(self.circle_maximum_radius_slider, self.circle_maximum_radius_value_label))
+        
+        self.circle_threshold_slider.setMinimum(1)
+        self.circle_threshold_slider.setMaximum(100)
+        self.circle_threshold_slider.setValue(20)
+        self.circle_threshold_slider.valueChanged.connect(lambda: self.update_slider_value(self.circle_threshold_slider, self.circle_threshold_value_label))
+        
+        self.circle_minimum_distance_slider.setMinimum(1)
+        self.circle_minimum_distance_slider.setMaximum(100)
+        self.circle_minimum_distance_slider.setValue(20)
+        self.circle_minimum_distance_slider.valueChanged.connect(lambda: self.update_slider_value(self.circle_minimum_distance_slider, self.circle_minimum_distance_value_label))
+        
+        self.ellipse_minimum_radius_slider.setMinimum(1)
+        self.ellipse_minimum_radius_slider.setMaximum(100)
+        self.ellipse_minimum_radius_slider.setValue(10)
+        self.ellipse_minimum_radius_slider.valueChanged.connect(lambda: self.update_slider_value(self.ellipse_minimum_radius_slider, self.ellipse_minimum_radius_value_label))
+        
+        self.ellipse_maximum_radius_slider.setMinimum(10)
+        self.ellipse_maximum_radius_slider.setMaximum(200)
+        self.ellipse_maximum_radius_slider.setValue(50)
+        self.ellipse_maximum_radius_slider.valueChanged.connect(lambda: self.update_slider_value(self.ellipse_maximum_radius_slider, self.ellipse_maximum_radius_value_label))
+        
+        self.ellipse_minimum_distance_slider.setMinimum(1)
+        self.ellipse_minimum_distance_slider.setMaximum(100)
+        self.ellipse_minimum_distance_slider.setValue(20)
+        self.ellipse_minimum_distance_slider.valueChanged.connect(lambda: self.update_slider_value(self.ellipse_minimum_distance_slider, self.ellipse_minimum_distance_value_label))
+        
+        self.line_threshold_slider.setMinimum(1)
+        self.line_threshold_slider.setMaximum(200)
+        self.line_threshold_slider.setValue(100)
+        self.line_threshold_slider.valueChanged.connect(lambda: self.update_slider_value(self.line_threshold_slider, self.line_threshold_value_label))
+        
+        # Initialize labels with default values
+        self.update_all_slider_values()
+
+    def update_slider_value(self, slider, label, multiplier=1):
+        value = slider.value() * multiplier
+        if multiplier == 1:
+            label.setText(str(value))
+        else:
+            label.setText(f"{value:.1f}")
+
+    def update_all_slider_values(self):
+        self.update_slider_value(self.kernel_size_slider, self.kernel_size_value_label)
+        self.update_slider_value(self.sigma_slider, self.sigma_value_label, 0.1)
+        self.update_slider_value(self.edge_detection_low_threshold_slider, self.edge_detection_low_threshold_value_label)
+        self.update_slider_value(self.edge_detection_high_threshold_slider, self.edge_detection_high_threshold_value_label)
+        self.update_slider_value(self.circle_minimum_radius_slider, self.circle_minimum_radius_value_label)
+        self.update_slider_value(self.circle_maximum_radius_slider, self.circle_maximum_radius_value_label)
+        self.update_slider_value(self.circle_threshold_slider, self.circle_threshold_value_label)
+        self.update_slider_value(self.circle_minimum_distance_slider, self.circle_minimum_distance_value_label)
+        self.update_slider_value(self.ellipse_minimum_radius_slider, self.ellipse_minimum_radius_value_label)
+        self.update_slider_value(self.ellipse_maximum_radius_slider, self.ellipse_maximum_radius_value_label)
+        self.update_slider_value(self.ellipse_minimum_distance_slider, self.ellipse_minimum_distance_value_label)
+        self.update_slider_value(self.line_threshold_slider, self.line_threshold_value_label)
 
 def toggle_layout_visibility(layout, visible):
     if layout is None:
