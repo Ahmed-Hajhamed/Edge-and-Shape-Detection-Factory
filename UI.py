@@ -187,42 +187,42 @@ class Ui_MainWindow(object):
         
         self.edge_detection_high_threshold_slider.setMinimum(0)
         self.edge_detection_high_threshold_slider.setMaximum(300)
-        self.edge_detection_high_threshold_slider.setValue(150)
+        self.edge_detection_high_threshold_slider.setValue(200)
         self.edge_detection_high_threshold_slider.valueChanged.connect(lambda: self.update_slider_value(self.edge_detection_high_threshold_slider, self.edge_detection_high_threshold_value_label))
         
         self.circle_minimum_radius_slider.setMinimum(1)
         self.circle_minimum_radius_slider.setMaximum(100)
-        self.circle_minimum_radius_slider.setValue(10)
+        self.circle_minimum_radius_slider.setValue(60)
         self.circle_minimum_radius_slider.valueChanged.connect(lambda: self.update_slider_value(self.circle_minimum_radius_slider, self.circle_minimum_radius_value_label))
         
         self.circle_maximum_radius_slider.setMinimum(10)
         self.circle_maximum_radius_slider.setMaximum(200)
-        self.circle_maximum_radius_slider.setValue(50)
+        self.circle_maximum_radius_slider.setValue(120)
         self.circle_maximum_radius_slider.valueChanged.connect(lambda: self.update_slider_value(self.circle_maximum_radius_slider, self.circle_maximum_radius_value_label))
         
         self.circle_threshold_slider.setMinimum(1)
         self.circle_threshold_slider.setMaximum(100)
-        self.circle_threshold_slider.setValue(20)
+        self.circle_threshold_slider.setValue(100)
         self.circle_threshold_slider.valueChanged.connect(lambda: self.update_slider_value(self.circle_threshold_slider, self.circle_threshold_value_label))
         
         self.circle_minimum_distance_slider.setMinimum(1)
         self.circle_minimum_distance_slider.setMaximum(100)
-        self.circle_minimum_distance_slider.setValue(20)
+        self.circle_minimum_distance_slider.setValue(10)
         self.circle_minimum_distance_slider.valueChanged.connect(lambda: self.update_slider_value(self.circle_minimum_distance_slider, self.circle_minimum_distance_value_label))
         
         self.ellipse_minimum_radius_slider.setMinimum(1)
         self.ellipse_minimum_radius_slider.setMaximum(100)
-        self.ellipse_minimum_radius_slider.setValue(10)
+        self.ellipse_minimum_radius_slider.setValue(100)
         self.ellipse_minimum_radius_slider.valueChanged.connect(lambda: self.update_slider_value(self.ellipse_minimum_radius_slider, self.ellipse_minimum_radius_value_label))
         
         self.ellipse_maximum_radius_slider.setMinimum(10)
         self.ellipse_maximum_radius_slider.setMaximum(200)
-        self.ellipse_maximum_radius_slider.setValue(50)
+        self.ellipse_maximum_radius_slider.setValue(200)
         self.ellipse_maximum_radius_slider.valueChanged.connect(lambda: self.update_slider_value(self.ellipse_maximum_radius_slider, self.ellipse_maximum_radius_value_label))
         
         self.ellipse_minimum_distance_slider.setMinimum(1)
         self.ellipse_minimum_distance_slider.setMaximum(100)
-        self.ellipse_minimum_distance_slider.setValue(20)
+        self.ellipse_minimum_distance_slider.setValue(5)
         self.ellipse_minimum_distance_slider.valueChanged.connect(lambda: self.update_slider_value(self.ellipse_minimum_distance_slider, self.ellipse_minimum_distance_value_label))
         
         self.line_threshold_slider.setMinimum(1)
