@@ -22,9 +22,13 @@ class Ui_MainWindow(object):
         self.edge_detection_result_label.setScaledContents(True)
         self.edge_detection_result_label.setFixedSize(600, 400)
 
-        self.main_layout.addWidget(self.edge_detection_result_label, 1, 1, 1, 1)
-        self.main_layout.addWidget(self.original_image_label, 0, 0, 1, 1)
-        self.main_layout.addWidget(self.shape_detection_result_label, 0, 1, 1, 1)
+        self.active_contour_button = QtWidgets.QPushButton('Active Contour', self.centralwidget)
+        self.active_contour_button.setMaximumWidth(200)
+        
+        self.main_layout.addWidget(self.active_contour_button, 0, 0, 1, 1)
+        self.main_layout.addWidget(self.original_image_label, 1, 0, 1, 1)
+        self.main_layout.addWidget(self.shape_detection_result_label, 1, 1, 1, 1)
+        self.main_layout.addWidget(self.edge_detection_result_label, 2, 1, 1, 1)
 
         self.main_controls_layout = QtWidgets.QVBoxLayout()
         self.edge_detectipn_controls_layout = QtWidgets.QGridLayout()
@@ -157,7 +161,7 @@ class Ui_MainWindow(object):
 
         self.main_controls_layout.addLayout(self.edge_detectipn_controls_layout)
         self.main_controls_layout.addLayout(self.hough_controls_layout)
-        self.main_layout.addLayout(self.main_controls_layout, 1, 0, 1, 1)
+        self.main_layout.addLayout(self.main_controls_layout, 2, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.setup_sliders()
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
