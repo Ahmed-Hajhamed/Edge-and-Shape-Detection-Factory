@@ -220,7 +220,24 @@ class SnakeGUI(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Active Contour Model")
-        self.setGeometry(100, 100, 1200, 800)
+        
+        # Get screen geometry
+        screen = QApplication.primaryScreen().geometry()
+        
+        # Set window size to 70% of screen size (reduced from 80%)
+        width = int(screen.width() * 0.7)
+        height = int(screen.height() * 0.7)
+        
+        # Set minimum size
+        self.setMinimumSize(800, 600)
+        
+        # Calculate position to center the window
+        x = (screen.width() - width) // 2
+        y = (screen.height() - height) // 2
+        
+        # Set initial size and position
+        self.resize(width, height)
+        self.move(x, y)
         
         # Initialize variables
         self.image = None
@@ -229,7 +246,7 @@ class SnakeGUI(QWidget):
         self.dragging = False
         self.center_x = None
         self.center_y = None
-        self.window_coords = None  # Add this line
+        self.window_coords = None
         self.init_ui()
         
     def init_ui(self):
@@ -319,6 +336,8 @@ class SnakeGUI(QWidget):
         
         # Right panel for image display
         self.image_label = QLabel('Double Click to Load Image')
+        self.image_label.setMinimumSize(400, 300)
+        self.image_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.image_label)
 
         # Add mouse event handling to image label
