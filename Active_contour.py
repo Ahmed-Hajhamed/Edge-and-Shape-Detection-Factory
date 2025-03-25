@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QLabel, QPushBu
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtGui import QImage, QPixmap, QPainter, QColor
 
-class SnakeApp(QMainWindow):
+class SnakeApp(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Active Contour Model")
@@ -31,6 +31,8 @@ class SnakeApp(QMainWindow):
         self.image_label.mousePressEvent = self.handle_mouse_click
         
         # Controls
+        self.back_to_main_button = QPushButton("Back to Main")
+
         self.btn_load = QPushButton("Load Image")
         self.btn_load.clicked.connect(self.load_image)
         
@@ -63,6 +65,7 @@ class SnakeApp(QMainWindow):
     def create_layout(self):
         # Control panel
         control_layout = QVBoxLayout()
+        control_layout.addWidget(self.back_to_main_button)
         control_layout.addWidget(self.btn_load)
         control_layout.addWidget(self.btn_reset)
         control_layout.addWidget(self.alpha_spin)
@@ -73,13 +76,13 @@ class SnakeApp(QMainWindow):
         control_layout.addStretch()
         
         # Main layout
-        main_widget = QWidget()
+        # main_widget = QWidget()
         main_layout = QHBoxLayout()
-        main_layout.addWidget(self.image_label, 75)
         main_layout.addLayout(control_layout, 25)
-        main_widget.setLayout(main_layout)
+        main_layout.addWidget(self.image_label, 75)
+        self.setLayout(main_layout)
         
-        self.setCentralWidget(main_widget)
+        # self.setCentralWidget(main_widget)
         
     def load_image(self):
         path, _ = QFileDialog.getOpenFileName()
