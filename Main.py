@@ -4,7 +4,7 @@ import UI
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog
 from PyQt5.QtGui import QImage, QPixmap
 from qt_material import apply_stylesheet
-
+from Canny import canny_edge_detection
 
 class Main(QMainWindow, UI.Ui_MainWindow):
     def __init__(self):
@@ -44,6 +44,8 @@ class Main(QMainWindow, UI.Ui_MainWindow):
         self.sigma = self.sigma_slider.value()
         self.kernel_size = self.kernel_size_slider.value()
         self.blurred_image = cv2.GaussianBlur(self.gray_image, (self.kernel_size, self.kernel_size), self.sigma)
+        # self.edge_detection_result_image = canny_edge_detection(self.blurred_image, self.edge_detection_low_threshold,
+        #                                                        self.edge_detection_high_threshold)
         self.edge_detection_result_image = cv2.Canny(self.blurred_image, self.edge_detection_low_threshold,
                                                       self.edge_detection_high_threshold)
         self.display_image(self.edge_detection_result_image, self.edge_detection_result_label)

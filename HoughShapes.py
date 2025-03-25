@@ -12,11 +12,11 @@ def hough_line_detection(image, edges, theta_resolution=1, rho_resolution=1):
     
     edge_points = np.argwhere(edges)
     for y, x in edge_points:
-        for theta_idx, theta in enumerate(thetas):
+        for theta_index, theta in enumerate(thetas):
             rho = int(x * np.cos(theta) + y * np.sin(theta))
-            rho_idx = np.where(rhos == rho)[0]
-            if rho_idx.size > 0:
-                accumulator[rho_idx[0], theta_idx] += 1
+            rho_index = np.where(rhos == rho)[0]
+            if rho_index.size > 0:
+                accumulator[rho_index[0], theta_index] += 1
     
     result_image = draw_hough_lines(image, accumulator, rhos, thetas)
     return result_image
@@ -36,11 +36,11 @@ def draw_hough_lines(image, accumulator, rhos, thetas, threshold=100):
         cv2.line(result_image, pt1, pt2, (0, 0, 255), 2)
     return result_image
 
-def hough_circle_detection(image, img_edges, min_radius, max_radius, threshold, min_dist):
+def hough_circle_detection(image, edges, min_radius, max_radius, threshold, min_distance):
     relust_image = image.copy()
-    h, w = img_edges.shape
-    accumulator = np.zeros((h, w, max_radius - min_radius + 1))
-    y_coords, x_coords = np.where(img_edges > 0)
+    height, width = edges.shape
+    accumulator = np.zeros((height, width, max_radius - min_radius + 1))
+    y_coords, x_coords = np.where(edges > 0)
     radius_values = np.arange(min_radius, max_radius + 1)
     angle_values = np.deg2rad(np.arange(0, 360))
 
@@ -50,7 +50,7 @@ def hough_circle_detection(image, img_edges, min_radius, max_radius, threshold, 
             b_coords = np.round(y_coords - radius * np.sin(angle)).astype(int)
             # Filter out of bounds coordinates
             valid_coords_mask = (a_coords >= 0) & (
-                    a_coords < w) & (b_coords >= 0) & (b_coords < h)
+                    a_coords < width) & (b_coords >= 0) & (b_coords < height)
             a_coords = a_coords[valid_coords_mask]
             b_coords = b_coords[valid_coords_mask]
 
@@ -58,12 +58,12 @@ def hough_circle_detection(image, img_edges, min_radius, max_radius, threshold, 
 
     circles = []
     for radius in range(max_radius - min_radius + 1):
-        acc_slice = accumulator[:, :, radius]
-        peaks = np.argwhere((acc_slice >= threshold))
-        for peak in peaks:
+        accumulator_section = accumulator[:, :, radius]
+        peak_values = np.argwhere((accumulator_section >= threshold))
+        for peak in peak_values:
             x, y, r = peak[1], peak[0], radius + min_radius
-            for cx, cy, _ in circles:
-                if np.sqrt((x - cx) ** 2 + (y - cy) ** 2) < min_dist:
+            for center_x, center_y, _ in circles:
+                if np.sqrt((x - center_x) ** 2 + (y - center_y) ** 2) < min_distance:
                     break
             else:
                 circles.append((x, y, r))
@@ -80,18 +80,18 @@ def hough_ellipse_detection(image, edges, min_radius, max_radius, min_distance):
     ellipses = []
     for contour in contours:
         if len(contour) >= 5:
-            ellipse = cv2.fitEllipse(contour)
+            current_ellipse = cv2.fitEllipse(contour)
 
-            if min(ellipse[1]) >= min_radius and max(ellipse[1]) <= max_radius:
+            if min(current_ellipse[1]) >= min_radius and max(current_ellipse[1]) <= max_radius:
                 valid = True
-                for other in ellipses:
-                    dist = np.linalg.norm(np.array(ellipse[0]) - np.array(other[0]))
-                    if dist < min_distance:
+                for ellipse in ellipses:
+                    euclidean_distance = np.linalg.norm(np.array(current_ellipse[0]) - np.array(ellipse[0]))
+                    if euclidean_distance < min_distance:
                         valid = False
                         break
                 if valid:
-                    ellipses.append(ellipse)
-                    cv2.ellipse(image, ellipse, (0, 255, 0), 2)
+                    ellipses.append(current_ellipse)
+                    cv2.ellipse(image, current_ellipse, (0, 255, 0), 2)
     return image
 
 # image = cv2.imread('Images//man.tif')
