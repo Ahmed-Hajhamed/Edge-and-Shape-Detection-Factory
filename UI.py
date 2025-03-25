@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtWidgets
 from qt_material import apply_stylesheet
 from Active_contour import SnakeApp
+from snake import SnakeGUI
 
 
 class Ui_MainWindow(object):
@@ -9,7 +10,7 @@ class Ui_MainWindow(object):
         MainWindow.resize(1200, 800)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
 
-        self.active_contour = SnakeApp()
+        self.active_contour = SnakeGUI()
         self.active_contour.back_to_main_button.clicked.connect(self.back_to_main_page)
         
         self.main_widget = QtWidgets.QWidget()

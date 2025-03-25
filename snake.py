@@ -1,168 +1,16 @@
 import itertools
-from typing import Tuple
 import cv2
 import numpy as np
-from typing import Union
 import sys
 from PyQt5.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QApplication, QWidget, QVBoxLayout, QHBoxLayout,
     QPushButton, QLabel, QSlider, QFileDialog, QGroupBox
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtGui import QImage, QPixmap
-import matplotlib.pyplot as plt
 from PIL import Image
-from dataclasses import dataclass
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Union
 
-@dataclass
-class ContourParams:
-    elasticity: float
-    smoothness: float
-    edge_force: float
-    intensity_weight: float
-    edge_weight: float
-    point_count: int
-    max_steps: int
-
-class ContourDetector:
-    def __init__(self):
-        self.edge_map = None
-        self.points_x = None
-        self.points_y = None
-        self.search_window = self._create_search_area(5)
-
-    def _create_search_area(self, size: int) -> List[Tuple[int, int]]:
-        radius = size // 2
-        return [(x, y) for x in range(-radius, radius + 1) 
-                for y in range(-radius, radius + 1)]
-
-    def _compute_edge_energy(self, img: np.ndarray) -> np.ndarray:
-        blurred = cv2.GaussianBlur(img, (5, 5), 2.0)
-        dx = cv2.Sobel(blurred, cv2.CV_64F, 1, 0)
-        dy = cv2.Sobel(blurred, cv2.CV_64F, 0, 1)
-        return np.sqrt(dx*dx + dy*dy)
-
-    def _compute_shape_energy(self, x: np.ndarray, y: np.ndarray, 
-                            elasticity: float, smoothness: float) -> float:
-        points = np.column_stack((x, y))
-        next_points = np.roll(points, -1, axis=0)
-        prev_points = np.roll(points, 1, axis=0)
-        
-        # Continuity
-        distances = np.sum((next_points - points)**2, axis=1)
-        cont_energy = elasticity * np.sum((distances - np.mean(distances))**2)
-        
-        # Smoothness
-        curve = np.sum((prev_points - 2*points + next_points)**2, axis=1)
-        smooth_energy = smoothness * np.sum(curve)
-        
-        return cont_energy + smooth_energy
-
-    def evolve_contour(self, img: np.ndarray, params: ContourParams) -> None:
-        if self.points_x is None:
-            return
-
-        height, width = img.shape[:2]
-        self.edge_map = self._compute_edge_energy(img)
-
-        for _ in range(params.max_steps):
-            for i in range(len(self.points_x)):
-                min_e = float('inf')
-                best_pos = (self.points_x[i], self.points_y[i])
-
-                for dx, dy in self.search_window:
-                    x = self.points_x[i] + dx
-                    y = self.points_y[i] + dy
-
-                    if 0 <= x < width and 0 <= y < height:
-                        curr_x = self.points_x.copy()
-                        curr_y = self.points_y.copy()
-                        curr_x[i] = x
-                        curr_y[i] = y
-
-                        shape_e = self._compute_shape_energy(
-                            curr_x, curr_y, 
-                            params.elasticity, 
-                            params.smoothness
-                        )
-                        edge_e = -params.edge_force * self.edge_map[y, x]
-                        total_e = shape_e + edge_e
-
-                        if total_e < min_e:
-                            min_e = total_e
-                            best_pos = (x, y)
-
-                self.points_x[i], self.points_y[i] = best_pos
-
-class ImageProcessor(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.detector = ContourDetector()
-        self.image = None
-        self.drag_active = False
-        self.anchor_x = None
-        self.anchor_y = None
-        self.setup_interface()
-
-    def setup_interface(self):
-        self.setWindowTitle("Medical Image Contour Detector")
-        self.setGeometry(100, 100, 1200, 800)
-
-        central = QWidget()
-        self.setCentralWidget(central)
-        layout = QHBoxLayout(central)
-
-        # Control panel
-        controls = self._create_control_panel()
-        layout.addWidget(controls, 1)
-
-        # Image view
-        self.view = QLabel()
-        self.view.setMinimumWidth(800)
-        layout.addWidget(self.view, 4)
-
-        # Mouse handling
-        self.view.mousePressEvent = self._start_drag
-        self.view.mouseReleaseEvent = self._end_drag
-        self.view.mouseMoveEvent = self._handle_drag
-
-    def _create_control_panel(self):
-        panel = QWidget()
-        layout = QVBoxLayout(panel)
-
-        # Add buttons
-        for name, func in [
-            ("Open Image", self._load_image),
-            ("Initialize", self._init_contour),
-            ("Detect", self._detect_contour)
-        ]:
-            btn = QPushButton(name)
-            btn.clicked.connect(func)
-            layout.addWidget(btn)
-
-        # Add parameter controls
-        self.controls = {}
-        params = [
-            ("size_x", "Width", 50, 400),
-            ("size_y", "Height", 50, 400),
-            ("elasticity", "Elasticity", 1, 100),
-            ("smoothness", "Smoothness", 1, 200),
-            ("edge_force", "Edge Force", 1, 500),
-            ("points", "Points", 30, 200)
-        ]
-
-        for pid, label, min_val, max_val in params:
-            group = QGroupBox(label)
-            box = QVBoxLayout()
-            slider = QSlider(Qt.Horizontal)
-            slider.setRange(min_val, max_val)
-            self.controls[pid] = slider
-            box.addWidget(slider)
-            group.setLayout(box)
-            layout.addWidget(group)
-
-        return panel
 
 def iterate_contour(source, contour_x, contour_y, external_energy, window_coordinates, alpha, beta):
     src = np.copy(source)
@@ -218,29 +66,6 @@ def iterate_contour(source, contour_x, contour_y, external_energy, window_coordi
             cont_y[Point] = NewY
             
     return cont_x, cont_y
-
-def boundary_tracker(image: np.ndarray, n_points: int) -> Tuple[np.ndarray, np.ndarray, List[Tuple[int, int]]]:
-    """Creates an initial elliptical boundary tracker around the target object.
-    
-    Args:
-        image: Input grayscale image
-        n_points: Number of points in the contour
-        
-    Returns:
-        x_coords: X coordinates of contour points
-        y_coords: Y coordinates of contour points 
-        search_area: Window coordinates for contour evolution
-    """
-    # Previous create_elipse_contour function
-    t = np.linspace(0, 2*np.pi, n_points)
-    x_coords = (image.shape[1] // 2) + 180 * np.cos(t)
-    y_coords = (image.shape[0] // 2) + 190 * np.sin(t)
-    
-    x_coords = x_coords.astype(int)
-    y_coords = y_coords.astype(int)
-    
-    search_area = create_search_window(5)
-    return x_coords, y_coords, search_area
 
 def create_search_window(size: int) -> List[Tuple[int, int]]:
     """Creates a search window for point movement.
@@ -353,11 +178,66 @@ def apply_gaussian(image: np.ndarray, kernel_size: int = 5,
     # Previous gaussian_filter function
     return cv2.GaussianBlur(image.copy(), (kernel_size, kernel_size), sigma)
 
-class SnakeGUI(QMainWindow):
+def get_direction( dx, dy):
+        if dx == 0 and dy == 0:
+            return 0  # No movement
+        angle = np.arctan2(dy, dx)
+        angle_deg = (np.degrees(angle) + 360) % 360  # Ensure [0, 360)
+        if 22.5 <= angle_deg < 67.5:
+            return 1
+        elif 67.5 <= angle_deg < 112.5:
+            return 2
+        elif 112.5 <= angle_deg < 157.5:
+            return 3
+        elif 157.5 <= angle_deg < 202.5:
+            return 4
+        elif 202.5 <= angle_deg < 247.5:
+            return 5
+        elif 247.5 <= angle_deg < 292.5:
+            return 6
+        elif 292.5 <= angle_deg < 337.5:
+            return 7
+        else:
+            return 0  # 337.5-360 or 0-22.5
+
+def contour_to_chain_code(contour):
+        chain_code = []
+        for i in range(len(contour) - 1):
+            dx = contour[i + 1][0] - contour[i][0]
+            dy = contour[i + 1][1] - contour[i][1]
+            direction = get_direction(dx, dy)
+            chain_code.append(direction)
+        
+        # Close the contour
+        dx = contour[0][0] - contour[-1][0]
+        dy = contour[0][1] - contour[-1][1]
+        direction = get_direction(dx, dy)
+        chain_code.append(direction)
+        
+        return chain_code
+
+class SnakeGUI(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Active Contour Model")
-        self.setGeometry(100, 100, 1200, 800)
+        
+        # Get screen geometry
+        screen = QApplication.primaryScreen().geometry()
+        
+        # Set window size to 70% of screen size (reduced from 80%)
+        width = int(screen.width() * 0.7)
+        height = int(screen.height() * 0.7)
+        
+        # Set minimum size
+        self.setMinimumSize(800, 600)
+        
+        # Calculate position to center the window
+        x = (screen.width() - width) // 2
+        y = (screen.height() - height) // 2
+        
+        # Set initial size and position
+        self.resize(width, height)
+        self.move(x, y)
         
         # Initialize variables
         self.image = None
@@ -366,14 +246,14 @@ class SnakeGUI(QMainWindow):
         self.dragging = False
         self.center_x = None
         self.center_y = None
-        self.window_coords = None  # Add this line
+        self.window_coords = None
         self.init_ui()
         
     def init_ui(self):
         # Create main widget and layout
-        main_widget = QWidget()
-        self.setCentralWidget(main_widget)
-        layout = QHBoxLayout(main_widget)
+        # main_widget = QWidget()
+        # self.setCentralWidget(main_widget)
+        layout = QHBoxLayout(self)
         
         # Left panel for controls
         left_panel = QWidget()
@@ -381,9 +261,12 @@ class SnakeGUI(QMainWindow):
         left_layout = QVBoxLayout(left_panel)
         
         # Add controls
-        load_btn = QPushButton("Load Image")
-        load_btn.clicked.connect(self.load_image)
-        left_layout.addWidget(load_btn)
+        self.back_to_main_button = QPushButton("Back to Main")
+        left_layout.addWidget(self.back_to_main_button)
+
+        # load_btn = QPushButton("Load Image")
+        # load_btn.clicked.connect(self.load_image)
+        # left_layout.addWidget(load_btn)
         
         # Initialize contour buttons
         circle_btn = QPushButton("Initialize contour")
@@ -398,7 +281,7 @@ class SnakeGUI(QMainWindow):
             ("radius_y", "Y Radius", 50, 400, 190),    # Control ellipse y-radius
             ("alpha", "Alpha (Continuity)", 1, 100, 20),     # 20 = 0.2 after /100 scaling
             ("beta", "Beta (Curvature)", 1, 200, 110),       # 110 = 1.1 after /100 scaling
-            ("gamma", "Gamma (External)", 1, 500, 450),       # 450 = 4.5 after /100 scaling
+            # ("gamma", "Gamma (External)", 1, 500, 450),       # 450 = 4.5 after /100 scaling
             ("w_line", "Line Weight", 1, 100, 10),           # 10 = 1.0 after /10 scaling
             ("w_edge", "Edge Weight", 1, 100, 80),           # 80 = 8.0 after /10 scaling
             ("points", "Circle Points", 30, 200, 60),        # 60 points for circle
@@ -452,7 +335,9 @@ class SnakeGUI(QMainWindow):
         layout.addWidget(left_panel)
         
         # Right panel for image display
-        self.image_label = QLabel()
+        self.image_label = QLabel('Double Click to Load Image')
+        self.image_label.setMinimumSize(400, 300)
+        self.image_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(self.image_label)
 
         # Add mouse event handling to image label
@@ -460,6 +345,7 @@ class SnakeGUI(QMainWindow):
         self.image_label.mousePressEvent = self.mousePressEvent
         self.image_label.mouseReleaseEvent = self.mouseReleaseEvent
         self.image_label.mouseMoveEvent = self.mouseMoveEvent
+        self.image_label.mouseDoubleClickEvent = self.load_image
         
         # Create measurements panel
         measurements_group = QGroupBox("Contour Measurements")
@@ -485,14 +371,17 @@ class SnakeGUI(QMainWindow):
         # Create labels for measurements
         self.area_label = QLabel("Area: -")
         self.perimeter_label = QLabel("Perimeter: -")
+        self.chain_code_label = QLabel("Chain Code: -")
+        
         
         measurements_layout.addWidget(self.area_label)
         measurements_layout.addWidget(self.perimeter_label)
+        measurements_layout.addWidget(self.chain_code_label)
         
         # Add measurements group to left panel
         left_layout.addWidget(measurements_group)
         
-    def load_image(self):
+    def load_image(self, event=None):
         try:
             file_path, _ = QFileDialog.getOpenFileName(
                 self,
@@ -536,7 +425,7 @@ class SnakeGUI(QMainWindow):
         # Get parameters
         alpha = self.sliders['alpha'].value() / 100
         beta = self.sliders['beta'].value() / 100
-        gamma = self.sliders['gamma'].value() / 100
+        # gamma = self.sliders['gamma'].value() / 100
         w_line = self.sliders['w_line'].value() / 10
         w_edge = self.sliders['w_edge'].value() / 10
         iterations = self.sliders['iterations'].value()
@@ -553,6 +442,12 @@ class SnakeGUI(QMainWindow):
             )
             self.display_image()
             QApplication.processEvents()
+        
+        # Calculate chain code
+        chain_code = contour_to_chain_code(np.column_stack((self.contour_x, self.contour_y)))
+        self.chain_code_label.setText(f"Chain Code: {chain_code}")
+        
+
     
     def display_image(self):
         if self.image is None:
