@@ -263,9 +263,9 @@ class SnakeGUI(QWidget):
         # Add controls
         self.back_to_main_button = QPushButton("Back to Main")
         left_layout.addWidget(self.back_to_main_button)
-
         # load_btn = QPushButton("Load Image")
         # load_btn.clicked.connect(self.load_image)
+
         # left_layout.addWidget(load_btn)
         
         # Initialize contour buttons

@@ -44,10 +44,10 @@ class Main(QMainWindow, UI.Ui_MainWindow):
         self.sigma = self.sigma_slider.value()
         self.kernel_size = self.kernel_size_slider.value()
         self.blurred_image = cv2.GaussianBlur(self.gray_image, (self.kernel_size, self.kernel_size), self.sigma)
-        # self.edge_detection_result_image = canny_edge_detection(self.blurred_image, self.edge_detection_low_threshold,
-        #                                                        self.edge_detection_high_threshold)
-        self.edge_detection_result_image = cv2.Canny(self.blurred_image, self.edge_detection_low_threshold,
-                                                      self.edge_detection_high_threshold)
+        self.edge_detection_result_image = canny_edge_detection(self.blurred_image, self.edge_detection_low_threshold,
+                                                               self.edge_detection_high_threshold)
+        # self.edge_detection_result_image = cv2.Canny(self.blurred_image, self.edge_detection_low_threshold,
+        #                                               self.edge_detection_high_threshold)
         self.display_image(self.edge_detection_result_image, self.edge_detection_result_label)
 
     def detect_shapes(self):
@@ -71,7 +71,7 @@ class Main(QMainWindow, UI.Ui_MainWindow):
         elif self.ellipse_detection_radio_button.isChecked():
             self.ellipse_minimum_radius = self.ellipse_minimum_radius_slider.value()
             self.ellipse_maximum_radius = self.ellipse_maximum_radius_slider.value()
-            self.ellipse_threshold = self.ellipse_threshold_slider.value()
+            self.ellipse_minimum_distance = self.ellipse_minimum_distance_slider.value()
             self.shapes_detection_result_image = hough_ellipse_detection(self.image, self.edge_detection_result_image,
                                                                         self.ellipse_minimum_radius, self.ellipse_maximum_radius,
                                                                         self.ellipse_threshold)
@@ -89,7 +89,7 @@ class Main(QMainWindow, UI.Ui_MainWindow):
             return
             
         # Convert the image to RGB format (OpenCV uses BGR)
-        if len(image.shape) == 3:  # Color image
+        if image.ndim == 3:  # Color image
             rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         else:  # Grayscale image
             rgb_image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)

@@ -229,7 +229,7 @@ class Ui_MainWindow(object):
         self.circle_minimum_distance_slider.valueChanged.connect(lambda: self.update_slider_value(self.circle_minimum_distance_slider, self.circle_minimum_distance_value_label))
         
         self.ellipse_minimum_radius_slider.setMinimum(1)
-        self.ellipse_minimum_radius_slider.setMaximum(100)
+        self.ellipse_minimum_radius_slider.setMaximum(200)
         self.ellipse_minimum_radius_slider.setValue(100)
         self.ellipse_minimum_radius_slider.valueChanged.connect(lambda: self.update_slider_value(self.ellipse_minimum_radius_slider, self.ellipse_minimum_radius_value_label))
         

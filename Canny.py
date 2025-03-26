@@ -1,45 +1,12 @@
-import cv2
 import numpy as np
 from scipy.signal import convolve2d
 
-def gaussian( img, sigma=1.0):
-    """
-    Apply Gaussian filter to an image.
-
-    The Gaussian filter is a type of convolution filter that is used to 'blur' the image or reduce detail and noise.
-
-    Parameters:
-        img (numpy.ndarray): Input image.
-        sigma (float): Standard deviation of the Gaussian kernel.
-
-    Returns:
-        result (numpy.ndarray): The image after applying the Gaussian filter.
-    """
-    kernel_size = (int(6 * sigma) + 1, int(6 * sigma) + 1)  # Determine kernel size based on sigma
-
-    # Apply Gaussian blur
-    result = cv2.GaussianBlur(img, kernel_size, sigma)
-
-    return result
-
-def sobel(img):
-    """
-    Apply Sobel operator to an image.
-
-    The Sobel operator is used in image processing and computer vision, particularly within edge detection
-    algorithms.
-
-    Parameters:
-        img (numpy.ndarray): Input image.
-
-    Returns:
-        result (numpy.ndarray): The image after applying the Sobel operator.
-    """
+def sobel(blurred_image):
     kernel_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
     kernel_y = np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]])
 
-    grad_x = convolve2d(img, kernel_x, mode='same', boundary='symm')
-    grad_y = convolve2d(img, kernel_y, mode='same', boundary='symm')
+    grad_x = convolve2d(blurred_image, kernel_x, mode='same', boundary='symm')
+    grad_y = convolve2d(blurred_image, kernel_y, mode='same', boundary='symm')
 
     gradient_magnitude = np.sqrt(grad_x ** 2 + grad_y ** 2)
     gradient_theta = np.arctan2(grad_y, grad_x)
@@ -88,10 +55,7 @@ def non_max_suppression( image, theta):
 
     return Z
 
-def threshold(image, low_threshold_ratio=0.05, high_threshold_ratio=0.09):
-    high_threshold = image.max() * high_threshold_ratio
-    low_threshold = high_threshold * low_threshold_ratio
-
+def threshold(image, low_threshold = 50, high_threshold = 100):
     M, N = image.shape
     result = np.zeros((M, N), dtype=np.int32)
 
@@ -99,7 +63,6 @@ def threshold(image, low_threshold_ratio=0.05, high_threshold_ratio=0.09):
     strong = np.int32(255)
 
     strong_i, strong_j = np.where(image >= high_threshold)
-    zeros_i, zeros_j = np.where(image < low_threshold)
 
     weak_i, weak_j = np.where((image <= high_threshold) & (image >= low_threshold))
 
@@ -126,24 +89,14 @@ def hysteresis(image, weak, strong=255):
                     pass
     return image
 
-def canny_edge_detection(image, sigma=0.5, low_threshold_ratio=0.05, high_threshold_ratio=0.07):
-    # Convert to grayscale
-    gray_image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-
-    # Apply Gaussian filter
-    img_gaussian = gaussian(gray_image, sigma)
-
-    # Sobel filtering
-    gradient_magnitude, gradient_theta = sobel(img_gaussian)
-
-    # Non-maximum suppression
+def canny_edge_detection(blurred_image, low_threshold=50, high_threshold=100):
+    gradient_magnitude, gradient_theta = sobel(blurred_image)
     suppressed_image = non_max_suppression(gradient_magnitude, gradient_theta)
 
-    # Thresholding
-    thresholded_image, weak_pixel, strong_pixel = threshold(suppressed_image, low_threshold_ratio,
-                                                                    high_threshold_ratio)
-
-    # Hysteresis
+    thresholded_image, weak_pixel, strong_pixel = threshold(suppressed_image, low_threshold, high_threshold)
     final_image = hysteresis(thresholded_image, weak_pixel, strong_pixel)
 
-    return final_image
+    # Convert to binary: 255 for edges, 0 for background
+    binary_image = np.where(final_image > 0, 255, 0).astype(np.uint8)
+
+    return binary_image
