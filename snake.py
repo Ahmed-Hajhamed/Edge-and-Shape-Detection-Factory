@@ -386,7 +386,7 @@ class SnakeGUI(QWidget):
             file_path, _ = QFileDialog.getOpenFileName(
                 self,
                 "Open Image",
-                "",
+                "Images/snake_images/",
                 "Image Files (*.png *.jpg *.jpeg *.bmp)"
             )
             
@@ -455,13 +455,17 @@ class SnakeGUI(QWidget):
             
         img_copy = self.image.copy()
         
+        # Convert grayscale to RGB first if needed
+        if len(img_copy.shape) == 2:
+            img_copy = cv2.cvtColor(img_copy, cv2.COLOR_GRAY2RGB)
+        
         # Draw contour if it exists
         if self.contour_x is not None:
             points = np.column_stack((self.contour_x, self.contour_y))
             points = points.astype(np.int32)
             
-            # Draw contour
-            cv2.polylines(img_copy, [points], True, (255, 255, 0), 2)
+            # Draw contour in green
+            cv2.polylines(img_copy, [points], True, (0, 255, 0), 2)
             
             # Calculate measurements
             perimeter = cv2.arcLength(points, True)
@@ -470,10 +474,6 @@ class SnakeGUI(QWidget):
             # Update measurement labels with formatted values
             self.area_label.setText(f"Area: {area:.2f} pixels²")
             self.perimeter_label.setText(f"Perimeter: {perimeter:.2f} pixels")
-        
-        # Convert grayscale to RGB if needed
-        if len(img_copy.shape) == 2:
-            img_copy = cv2.cvtColor(img_copy, cv2.COLOR_GRAY2RGB)
         
         # Convert to QImage and display
         height, width, channel = img_copy.shape
