@@ -192,7 +192,8 @@ class Ui_MainWindow(object):
         self.kernel_size_slider.setSingleStep(2)
         self.kernel_size_slider.setValue(5)
         self.kernel_size_slider.valueChanged.connect(lambda: self.update_slider_value(self.kernel_size_slider, self.kernel_size_value_label))
-        
+        self.kernel_size_slider.sliderReleased.connect(self.adjust_kernel_size)
+
         self.sigma_slider.setMinimum(1)
         self.sigma_slider.setMaximum(10)
         self.sigma_slider.setValue(1)
@@ -250,6 +251,15 @@ class Ui_MainWindow(object):
         
         # Initialize labels with default values
         self.update_all_slider_values()
+
+    def adjust_kernel_size(self):
+        value = self.kernel_size_slider.value()
+
+        # If even, move to the next lower odd value
+        if value % 2 == 0:
+            value -= 1
+
+        self.kernel_size_slider.setValue(value)
 
     def update_slider_value(self, slider, label, multiplier=1):
         value = slider.value() * multiplier

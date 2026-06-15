@@ -16,7 +16,7 @@ def sobel(blurred_image):
 
     return gradient_magnitude, gradient_theta
 
-def non_max_suppression( image, theta):
+def non_max_suppression(image, theta):
     M, N = image.shape
     Z = np.zeros((M, N), dtype=np.int32)
     angle = theta * 180. / np.pi
