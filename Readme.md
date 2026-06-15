@@ -78,20 +78,20 @@ Features:
 
 ### Line Detection Module
 
-![Line Detection](images/Results/line.png)
+![Line Detection](Images/Results/line.png)
 
 ---
 
 ### Circle Detection Module
 
-![Circle Detection](images/Results/circle.png)
+![Circle Detection](Images/Results/circle.png)
 
 ---
 
 
 ### Active Contour Module
 
-![Active Contour](images/Results/snake.png)
+![Active Contour](Images/Results/snake.png)
 
 ---
 
@@ -168,31 +168,27 @@ Workflow:
   <tr>
     <td align="center">
       <a href="https://github.com/Ahmed-Hajhamed">
-        <img src="https://via.placeholder.com/100" width="100px;" alt="Ahmed Hajhamed"/><br />
-        <sub><b>Ahmed Hajhamed</b></sub>
+        <img src="https://github.com/Ahmed-Hajhamed.png?size=100" width="100"><br>
+        <b>Ahmed Hajhamed</b>
       </a>
     </td>
     <td align="center">
       <a href="https://github.com/AhmedEtma">
-        <img src="https://via.placeholder.com/100" width="100px;" alt="Ahmed Etman"/><br />
-        <sub><b>Ahmed Etman</b></sub>
+        <img src="https://github.com/AhmedEtma.png?size=100" width="100"><br>
+        <b>Ahmed Etman</b>
       </a>
     </td>
     <td align="center">
       <a href="https://github.com/zeyad-wail">
-        <img src="https://via.placeholder.com/100" width="100px;" alt="Zeyad Wail"/><br />
-        <sub><b>Zeyad Wail</b></sub>
+        <img src="https://github.com/zeyad-wail.png?size=100" width="100"><br>
+        <b>Zeyad Wail</b>
       </a>
     </td>
     <td align="center">
       <a href="https://github.com/MohamadAhmedAli">
-        <img src="https://via.placeholder.com/100" width="100px;" alt="Mohamed Ahmed"/><br />
-        <sub><b>Mohamed Ahmed</b></sub>
+        <img src="https://github.com/MohamadAhmedAli.png?size=100" width="100"><br>
+        <b>Mohamed Ahmed</b>
       </a>
     </td>
   </tr>
 </table>
-
-</div>
-
----
