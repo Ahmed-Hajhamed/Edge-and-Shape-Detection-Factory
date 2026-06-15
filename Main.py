@@ -30,7 +30,7 @@ class Main(QMainWindow, UI.Ui_MainWindow):
         self.kernel_size = 5
 
     def load_image(self, event):
-        file_name, _ = QFileDialog.getOpenFileName(self, 'Open Image File', 'Images', 'Image files (*.jpg *.png)')
+        file_name, _ = QFileDialog.getOpenFileName(self, 'Open Image File', 'Images', 'Image files (*.jpg *.png *.jpeg *.bmp)')
         if file_name:
             self.image = cv2.imread(file_name)
             self.gray_image = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
